@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_text_rewrite.AiRewriteDialog" owl="1">
+        <Dialog title="'AI Rewrite'" size="'md'">
+            <div class="o_ai_rewrite_dialog">
+                <div class="mb-3">
+                    <label class="form-label" for="ai_rewrite_instruction">Instruction</label>
+                    <textarea id="ai_rewrite_instruction"
+                        class="form-control"
+                        rows="2"
+                        t-model="state.instruction"
+                        t-att-disabled="state.isLoading"
+                    />
+                    <p class="text-muted small mt-1 mb-0" data-test="ai-rewrite-destination-notice">
+                        This text will be sent to the AI service configured in Settings to be rewritten.
+                    </p>
+                </div>
+                <button type="button"
+                    class="btn btn-primary mb-3"
+                    t-on-click="generate"
+                    t-att-disabled="state.isLoading">
+                    <i t-if="state.isLoading" class="fa fa-circle-o-notch fa-spin me-1"/>
+                    <t t-if="state.isLoading">Generating...</t>
+                    <t t-else="">Generate</t>
+                </button>
+                <div t-if="state.error" class="alert alert-danger" role="alert" t-esc="state.error"/>
+                <div t-if="hasResult" class="mb-3">
+                    <label class="form-label">Preview</label>
+                    <div t-if="props.isHtml" class="o_ai_rewrite_preview border rounded p-2" t-out="previewValue"/>
+                    <textarea t-else="" class="form-control o_ai_rewrite_preview" rows="6" readonly="readonly" t-esc="state.preview"/>
+                </div>
+            </div>
+            <t t-set-slot="footer">
+                <button type="button" class="btn btn-primary" t-on-click="replace" t-att-disabled="!hasResult or state.isLoading">Replace</button>
+                <button type="button" class="btn btn-secondary" t-on-click="generate" t-att-disabled="state.isLoading">Regenerate</button>
+                <button type="button" class="btn btn-secondary" t-on-click="props.close">Cancel</button>
+            </t>
+        </Dialog>
+    </t>
+
+</templates>

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <!-- why: the wrapper exists only to host the button, so in readonly the field renders exactly
+         like the core one and keeps the wrapping the list gives it -->
+    <t t-name="ai_text_rewrite.AiRewriteTextField" owl="1">
+        <t t-if="props.readonly">
+            <t t-call="web.TextField"/>
+        </t>
+        <div t-else="" class="o_ai_rewrite_field">
+            <div class="o_ai_rewrite_toolbar text-end mb-1">
+                <AiRewriteButton
+                    value="props.value or ''"
+                    isHtml="false"
+                    onApply="(value) => props.update(value)"
+                />
+            </div>
+            <t t-call="web.TextField"/>
+        </div>
+    </t>
+
+    <t t-name="ai_text_rewrite.AiRewriteListTextField" owl="1">
+        <t t-if="props.readonly">
+            <t t-call="web.TextField"/>
+        </t>
+        <div t-else="" class="o_ai_rewrite_field o_ai_rewrite_field_list">
+            <t t-call="web.TextField"/>
+            <div class="o_ai_rewrite_toolbar">
+                <AiRewriteButton
+                    value="props.value or ''"
+                    isHtml="false"
+                    onApply="(value) => props.update(value)"
+                />
+            </div>
+        </div>
+    </t>
+
+</templates>

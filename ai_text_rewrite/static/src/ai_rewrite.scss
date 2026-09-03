@@ -1,0 +1,38 @@
+.o_ai_rewrite_toolbar {
+    .o_ai_rewrite_button {
+        color: $o-brand-primary;
+        font-size: 12px;
+    }
+}
+
+// why: inside a list cell the button sits next to the value instead of above it,
+// so it does not cost the row an extra line
+.o_ai_rewrite_field_list {
+    display: flex;
+    align-items: flex-start;
+
+    > :first-child {
+        flex: 1 1 auto;
+        min-width: 0;
+    }
+
+    .o_ai_rewrite_toolbar {
+        flex: 0 0 auto;
+    }
+}
+
+// why: in a list cell the td is text-truncate, and the value span inherits its nowrap even
+// though the field div carries pre-wrap. Core does exactly this for section_and_note_text.
+.o_field_ai_text {
+    > span {
+        white-space: pre-wrap !important;
+    }
+}
+
+.o_ai_rewrite_dialog {
+    .o_ai_rewrite_preview {
+        max-height: 300px;
+        overflow: auto;
+        background-color: $o-view-background-color;
+    }
+}

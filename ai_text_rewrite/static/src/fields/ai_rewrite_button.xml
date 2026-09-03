@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_text_rewrite.AiRewriteButton" owl="1">
+        <button type="button"
+            class="btn btn-link o_ai_rewrite_button p-0"
+            title="Rewrite with AI"
+            t-on-click="openDialog">
+            <i class="fa fa-magic" role="img" aria-label="Rewrite with AI"/>
+            <span> AI</span>
+        </button>
+    </t>
+
+</templates>

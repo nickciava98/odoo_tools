@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ai_text_rewrite.AiRewriteHtmlField" owl="1">
+        <div class="o_ai_rewrite_field">
+            <div t-if="!props.readonly" class="o_ai_rewrite_toolbar text-end mb-1">
+                <AiRewriteButton
+                    value="props.value or ''"
+                    isHtml="true"
+                    onApply="(value) => props.update(value)"
+                />
+            </div>
+            <t t-call="web_editor.HtmlField"/>
+        </div>
+    </t>
+
+</templates>
