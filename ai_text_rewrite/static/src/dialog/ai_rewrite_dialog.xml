@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="ai_text_rewrite.AiRewriteDialog" owl="1">
+    <t t-name="ai_text_rewrite.AiRewriteDialog">
         <Dialog title="'AI Rewrite'" size="'md'">
             <div class="o_ai_rewrite_dialog">
                 <div class="mb-3">
@@ -24,11 +24,11 @@
                     <t t-if="state.isLoading">Generating...</t>
                     <t t-else="">Generate</t>
                 </button>
-                <div t-if="state.error" class="alert alert-danger" role="alert" t-esc="state.error"/>
+                <div t-if="state.error" class="alert alert-danger" role="alert" t-out="state.error"/>
                 <div t-if="hasResult" class="mb-3">
                     <label class="form-label">Preview</label>
                     <div t-if="props.isHtml" class="o_ai_rewrite_preview border rounded p-2" t-out="previewValue"/>
-                    <textarea t-else="" class="form-control o_ai_rewrite_preview" rows="6" readonly="readonly" t-esc="state.preview"/>
+                    <textarea t-else="" class="form-control o_ai_rewrite_preview" rows="6" readonly="readonly" t-out="state.preview"/>
                 </div>
             </div>
             <t t-set-slot="footer">

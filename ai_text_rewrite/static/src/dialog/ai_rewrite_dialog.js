@@ -2,13 +2,13 @@
 
 import { _t } from "@web/core/l10n/translation";
 import { Dialog } from "@web/core/dialog/dialog";
-import { useService } from "@web/core/utils/hooks";
+// why: v18 dropped the "rpc" service in favour of a direct import
+import { rpc } from "@web/core/network/rpc";
 
 import { Component, markup, useState } from "@odoo/owl";
 
 export class AiRewriteDialog extends Component {
     setup() {
-        this.rpc = useService("rpc");
         this.state = useState({
             instruction: _t("Rewrite this text so that it is clearer and more professional."),
             preview: "",
@@ -30,7 +30,7 @@ export class AiRewriteDialog extends Component {
         this.state.error = "";
         this.state.preview = "";
         try {
-            const result = await this.rpc("/ai_text_rewrite/rewrite", {
+            const result = await rpc("/ai_text_rewrite/rewrite", {
                 text: this.props.text,
                 instruction: this.state.instruction,
                 is_html: this.props.isHtml,

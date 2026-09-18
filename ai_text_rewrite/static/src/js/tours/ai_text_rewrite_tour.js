@@ -1,13 +1,13 @@
 /** @odoo-module **/
 
-import tour from "web_tour.tour";
+import { registry } from "@web/core/registry";
 
-tour.register("ai_text_rewrite_replace", {
+registry.category("web_tour.tours").add("ai_text_rewrite_replace", {
     // No "url" here on purpose: the wrapper's start_tour() navigates to a specific scratch
     // record beforehand. Setting "url" would make the tour force a redirect to it as soon as
     // it starts running, wiping out the action/record we just opened.
     test: true,
-}, [
+    steps: () => [
     {
         // Open the dialog from the AI button of the "ai_text" widget.
         trigger: '.o_field_widget[name="text"] .o_ai_rewrite_button',
@@ -18,7 +18,7 @@ tour.register("ai_text_rewrite_replace", {
         // trigger lookup to `$('.modal:visible').last().find(trigger)` on its own, so a
         // trigger that repeats ".modal" ends up looking for a nested modal that never matches.
         trigger: ".o_ai_rewrite_dialog textarea#ai_rewrite_instruction",
-        run: "text Rewrite this note for the QA smoke test.",
+        run: "edit Rewrite this note for the QA smoke test.",
     },
     {
         // Only the "Generate" button lives inside .o_ai_rewrite_dialog (Replace/Regenerate/Cancel are in the footer).
@@ -42,11 +42,11 @@ tour.register("ai_text_rewrite_replace", {
     },
 ]);
 
-tour.register("ai_text_rewrite_settings_provider_switch", {
+registry.category("web_tour.tours").add("ai_text_rewrite_settings_provider_switch", {
     // No "url": the wrapper navigates straight to the res.config.settings action beforehand,
     // same reasoning as the tour above.
     test: true,
-}, [
+    steps: () => [
     {
         // Switch away from the default "openai" provider, onto "pollinations". The tour engine's
         // own "text <value>" handling for a <select> (running_tour_action_helper.js, RunningTourActionHelper._text)
@@ -79,11 +79,11 @@ tour.register("ai_text_rewrite_settings_provider_switch", {
     },
 ]);
 
-tour.register("ai_text_rewrite_replace_html", {
+registry.category("web_tour.tours").add("ai_text_rewrite_replace_html", {
     // No "url" here on purpose, same reasoning as "ai_text_rewrite_replace": the wrapper's
     // start_tour() navigates to a specific scratch record beforehand.
     test: true,
-}, [
+    steps: () => [
     {
         // Open the dialog from the AI button of the "ai_html" widget. Same dialog component as
         // "ai_text_rewrite_replace": what's under test here is that Replace actually reaches the
@@ -93,7 +93,7 @@ tour.register("ai_text_rewrite_replace_html", {
     },
     {
         trigger: ".o_ai_rewrite_dialog textarea#ai_rewrite_instruction",
-        run: "text Rewrite this note for the QA smoke test.",
+        run: "edit Rewrite this note for the QA smoke test.",
     },
     {
         trigger: ".o_ai_rewrite_dialog .btn-primary",
@@ -113,4 +113,5 @@ tour.register("ai_text_rewrite_replace_html", {
         // saved record, once the tour is done).
         trigger: ".o_form_saved",
     },
-]);
+    ],
+});

@@ -4,7 +4,7 @@ from urllib.parse import quote
 
 import requests
 
-from odoo import models, api, _
+from odoo import models, api
 from odoo.exceptions import UserError
 from odoo.tools import html_sanitize
 
@@ -31,13 +31,13 @@ class AiRewriteService(models.AbstractModel):
         # why: public + unprivate would be callable over RPC by any logged in user, bypassing the
         # route's own checks and spending the configured (possibly paid) API key on arbitrary input
         if not text or not text.strip():
-            raise UserError(_("There is no text to rewrite."))
+            raise UserError(self.env._("There is no text to rewrite."))
 
         settings = self._get_ai_settings()
         prompt = self._build_ai_prompt(text, instruction, is_html, settings)
 
         if len(prompt) > MAX_INPUT_LENGTH:
-            raise UserError(_("The text is too long to be rewritten (maximum %s characters).", MAX_INPUT_LENGTH))
+            raise UserError(self.env._("The text is too long to be rewritten (maximum %s characters).", MAX_INPUT_LENGTH))
 
         # why: no other trace of an outbound call exists; needed to explain a cost spike or a data query,
         # without logging the text itself or the API key
@@ -75,7 +75,7 @@ class AiRewriteService(models.AbstractModel):
             parts.append(instruction)
 
         if is_html:
-            parts.append(_("The text is HTML markup: keep the tags and only rewrite the visible content."))
+            parts.append(self.env._("The text is HTML markup: keep the tags and only rewrite the visible content."))
 
         parts.append(text)
         return "\n\n".join(parts)
@@ -83,7 +83,7 @@ class AiRewriteService(models.AbstractModel):
     def _call_pollinations(self, prompt, settings):
         # why: measured against the live free endpoint, prompts beyond a few hundred chars get a raw 402
         if len(prompt) > POLLINATIONS_MAX_INPUT_LENGTH:
-            raise UserError(_(
+            raise UserError(self.env._(
                 "The free AI service only accepts short texts (up to about %s characters, including the "
                 "shared system prompt). For longer texts, configure a provider with an API key in Settings.",
                 POLLINATIONS_MAX_INPUT_LENGTH
@@ -94,15 +94,15 @@ class AiRewriteService(models.AbstractModel):
             POLLINATIONS_URL % quote(prompt),
             {"headers": {"Referer": POLLINATIONS_REFERER}, "timeout": settings["timeout"]},
             POLLINATIONS_QUOTA_STATUS_CODES,
-            _("The free AI service refused the request: it is a shared public service with no guarantees. "
+            self.env._("The free AI service refused the request: it is a shared public service with no guarantees. "
               "Please try again later or configure a provider with an API key in Settings."),
-            _("The free AI service is currently unavailable, please try again later.")
+            self.env._("The free AI service is currently unavailable, please try again later.")
         )
         return response.text
 
     def _call_openai_compatible(self, prompt, settings):
         if not settings["base_url"] or not settings["model"]:
-            raise UserError(_("Please configure the API base URL and the model name in Settings."))
+            raise UserError(self.env._("Please configure the API base URL and the model name in Settings."))
 
         headers = {"Content-Type": "application/json"}
 
@@ -123,13 +123,13 @@ class AiRewriteService(models.AbstractModel):
             settings["base_url"].rstrip("/") + "/chat/completions",
             {"headers": headers, "json": body, "timeout": settings["timeout"]},
             OPENAI_UNAUTHORIZED_STATUS_CODES,
-            _("The configured API key was rejected, please check it in Settings."),
-            _("The configured AI service could not be reached, please check the settings.")
+            self.env._("The configured API key was rejected, please check it in Settings."),
+            self.env._("The configured AI service could not be reached, please check the settings.")
         )
         rewritten = (response.json()["choices"][0]["message"].get("content") or "").strip()
 
         if not rewritten:
-            raise UserError(_("The AI service returned an empty answer, please try again."))
+            raise UserError(self.env._("The AI service returned an empty answer, please try again."))
 
         return rewritten
 
@@ -170,7 +170,7 @@ class AiRewriteService(models.AbstractModel):
             if e.response is not None and e.response.status_code in quota_status_codes:
                 raise UserError(quota_message) from e
             if e.response is not None and e.response.status_code in OPENAI_MODEL_NOT_FOUND_STATUS_CODES:
-                raise UserError(_(
+                raise UserError(self.env._(
                     "The AI service does not know the configured model, or the API key has no access to it. "
                     "Check the model name in Settings.\n%s", self._response_detail(e.response))) from e
             raise UserError(generic_message) from e

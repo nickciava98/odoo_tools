@@ -43,18 +43,18 @@ class TestAiRewriteListWrap(HttpCase):
         view_id = self.env["ir.ui.view"].create({
             "name": "ai_text_rewrite list wrap",
             "model": "ir.attachment",
-            "type": "tree",
+            "type": "list",
             "arch": """
-                <tree editable="bottom" create="0" delete="0">
+                <list editable="bottom" create="0" delete="0">
                     <field name="name" widget="ai_text"/>
                     <field name="description" widget="ai_text"/>
-                </tree>"""
+                </list>"""
         })
         action_id = self.env["ir.actions.act_window"].create({
             "name": "ai_text_rewrite list wrap",
             "res_model": "ir.attachment",
-            "view_mode": "tree",
-            "views": [(view_id.id, "tree")],
+            "view_mode": "list",
+            "views": [(view_id.id, "list")],
             "domain": "[('name', 'like', 'a very long snippet')]"
         })
         self.env.flush_all()

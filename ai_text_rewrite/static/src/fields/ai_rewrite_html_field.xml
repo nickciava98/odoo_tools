@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <templates xml:space="preserve">
 
-    <t t-name="ai_text_rewrite.AiRewriteHtmlField" owl="1">
+    <t t-name="ai_text_rewrite.AiRewriteHtmlField">
         <div class="o_ai_rewrite_field">
             <div t-if="!props.readonly" class="o_ai_rewrite_toolbar text-end mb-1">
                 <AiRewriteButton
-                    value="props.value or ''"
+                    value="props.record.data[props.name] or ''"
                     isHtml="true"
-                    onApply="(value) => props.update(value)"
+                    onApply="(value) => props.record.update({ [props.name]: value })"
                 />
             </div>
-            <t t-call="web_editor.HtmlField"/>
+            <t t-call="html_editor.HtmlField"/>
         </div>
     </t>
 

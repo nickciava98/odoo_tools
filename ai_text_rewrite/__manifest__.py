@@ -1,14 +1,19 @@
 {
     "name": "AI Text Rewrite",
     "summary": "Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings",
-    "version": "16.0.1.4.1",
+    "version": "18.0.1.0.0",
     "author": "Niccolò Ciavarella",
     "website": "https://nciavarella.odoo-cloud.ovh",
     "license": "LGPL-3",
     "category": "Productivity",
     "depends": [
-        "web_editor"
+        "html_editor"
     ],
+    "external_dependencies": {
+        "python": [
+            "requests"
+        ]
+    },
     "assets": {
         "web.assets_backend": [
             "ai_text_rewrite/static/src/ai_rewrite.scss",
