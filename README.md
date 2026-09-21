@@ -2,11 +2,11 @@
 
 A small collection of general-purpose Odoo addons.
 
-Branch `16.0` targets **Odoo 16 Community**.
+Branch `18.0` targets **Odoo 18 Community**.
 
 | | Addon | Version | Summary |
 | --- | --- | --- | --- |
-| <img src="ai_text_rewrite/static/description/icon.png" width="28"> | [`ai_text_rewrite`](ai_text_rewrite) | 16.0.1.4.1 | Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings |
+| <img src="ai_text_rewrite/static/description/icon.png" width="28"> | [`ai_text_rewrite`](ai_text_rewrite) | 18.0.1.0.0 | Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings |
 
 ---
 
