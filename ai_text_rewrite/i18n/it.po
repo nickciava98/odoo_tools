@@ -179,7 +179,7 @@ msgstr "Rigenera"
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
 #, python-format
-msgid "Replace"
+msgid "Replace text"
 msgstr "Sostituisci"
 
 #. module: ai_text_rewrite

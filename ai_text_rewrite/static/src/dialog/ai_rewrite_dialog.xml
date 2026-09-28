@@ -32,7 +32,7 @@
                 </div>
             </div>
             <t t-set-slot="footer">
-                <button type="button" class="btn btn-primary" t-on-click="replace" t-att-disabled="!hasResult or state.isLoading">Replace</button>
+                <button type="button" class="btn btn-primary" t-on-click="replace" t-att-disabled="!hasResult or state.isLoading">Replace text</button>
                 <button type="button" class="btn btn-secondary" t-on-click="generate" t-att-disabled="state.isLoading">Regenerate</button>
                 <button type="button" class="btn btn-secondary" t-on-click="props.close">Cancel</button>
             </t>
