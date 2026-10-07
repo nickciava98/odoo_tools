@@ -23,6 +23,7 @@ STYLE_EXAMPLE_MIN_LENGTH = 20
 STYLE_EXAMPLE_MAX_LENGTH = 1000
 STYLE_EXAMPLES_MAX_LENGTH = 6000
 STYLE_FIELD_TYPES = ("char", "html", "text")
+RECORD_CONTEXT_MAX_LENGTH = 8000
 MARKDOWN_FENCE_RE = re.compile(r"^```[a-zA-Z]*\n?|\n?```$")
 
 
@@ -32,7 +33,7 @@ class AiRewriteService(models.AbstractModel):
 
     @api.private
     @api.model
-    def rewrite(self, text, instruction=False, is_html=False, model=False, field=False, res_id=False):
+    def rewrite(self, text, instruction=False, is_html=False, model=False, field=False, res_id=False, record_values=False):
         # why: public + unprivate would be callable over RPC by any logged in user, bypassing the
         # route's own checks and spending the configured (possibly paid) API key on arbitrary input
         if not text or not text.strip():
@@ -44,12 +45,18 @@ class AiRewriteService(models.AbstractModel):
         if len(prompt) > MAX_INPUT_LENGTH:
             raise UserError(self.env._("The text is too long to be rewritten (maximum %s characters).", MAX_INPUT_LENGTH))
 
-        # why: the free provider caps the whole prompt at a few hundred chars, examples would never fit
-        if model and field and settings["style_enabled"] and settings["provider"] == "openai":
-            budget = min(STYLE_EXAMPLES_MAX_LENGTH, MAX_INPUT_LENGTH - len(prompt))
-            style_examples = self._get_style_examples(model, field, res_id, text, budget)
-            if style_examples:
-                prompt = self._build_ai_prompt(text, instruction, is_html, settings, style_examples)
+        # why: the free provider caps the whole prompt at a few hundred chars, context would never fit
+        if model and settings["provider"] == "openai":
+            budget = min(RECORD_CONTEXT_MAX_LENGTH, MAX_INPUT_LENGTH - len(prompt))
+            record_context = self._get_record_context(model, field, res_id, record_values or {})[:budget]
+            if record_context:
+                prompt = self._build_ai_prompt(text, instruction, is_html, settings, record_context=record_context)
+
+            if field and settings["style_enabled"]:
+                budget = min(STYLE_EXAMPLES_MAX_LENGTH, MAX_INPUT_LENGTH - len(prompt))
+                style_examples = self._get_style_examples(model, field, res_id, text, budget)
+                if style_examples:
+                    prompt = self._build_ai_prompt(text, instruction, is_html, settings, style_examples, record_context)
 
         # why: no other trace of an outbound call exists; needed to explain a cost spike or a data query,
         # without logging the text itself or the API key
@@ -74,6 +81,9 @@ class AiRewriteService(models.AbstractModel):
             "timeout": int(config_parameter_model.get_param("ai_text_rewrite.timeout", 60)),
             "style_enabled": config_parameter_model.get_param("ai_text_rewrite.style_enabled", "True") != "False"
         }
+
+    def _get_record_context(self, model, field, res_id, record_values):
+        return ""
 
     def _get_style_examples(self, model, field, res_id, text, budget):
         if model not in self.env:
@@ -131,7 +141,7 @@ class AiRewriteService(models.AbstractModel):
             value = html2plaintext(value or "")
         return (value or "").strip()
 
-    def _build_ai_prompt(self, text, instruction, is_html, settings=None, style_examples=None):
+    def _build_ai_prompt(self, text, instruction, is_html, settings=None, style_examples=None, record_context=None):
         # why: settings is optional so direct 3-argument calls (as in the original contract) still
         # work; rewrite() passes its own settings down to avoid a second round of get_param calls
         settings = settings or self._get_ai_settings()
@@ -145,6 +155,15 @@ class AiRewriteService(models.AbstractModel):
 
         if is_html:
             parts.append(self.env._("The text is HTML markup: keep the tags and only rewrite the visible content."))
+
+        if record_context:
+            parts.append(
+                "Background on the work the text refers to. Use it only to understand and correctly name what the "
+                "text already mentions. Never add an activity, a result, a fact or a detail that the text itself "
+                "does not mention, even when the background describes it: the background covers the whole work "
+                "item, the text covers only one part of it.\n\n"
+                "<background>\n%s\n</background>" % record_context
+            )
 
         if style_examples:
             parts.append(

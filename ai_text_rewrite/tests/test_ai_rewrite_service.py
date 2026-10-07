@@ -568,3 +568,31 @@ class TestAiRewriteService(TransactionCase):
             with self.assertRaises(UserError) as raised:
                 self.service.rewrite("Rewrite this text please")
         self.assertIn("empty answer", str(raised.exception))
+
+    # ------------------------------------------------------------------
+    # 6. Record context hook
+    # ------------------------------------------------------------------
+
+    def test_rewrite_puts_the_record_context_in_the_prompt(self):
+        self._use_openai()
+        service_cls = type(self.service)
+        with patch.object(service_cls, "_get_record_context", autospec=True, return_value="Task T1 fixed the invoice report.") as context_mock, \
+                self._mocked_providers() as (_pollinations_mock, openai_mock):
+            self.service.rewrite("Fixed report.", False, False, "res.partner", "comment", False, {"ref": "T1"})
+        prompt = openai_mock.call_args.args[1]
+        self.assertIn("Task T1 fixed the invoice report.", prompt)
+        self.assertLess(prompt.index("Task T1 fixed the invoice report."), prompt.index("Fixed report."))
+        self.assertIn("Never add an activity", prompt)
+        self.assertEqual(context_mock.call_args.args[1:], ("res.partner", "comment", False, {"ref": "T1"}))
+
+    def test_rewrite_skips_the_record_context_on_the_free_provider(self):
+        self._use_pollinations()
+        service_cls = type(self.service)
+        with patch.object(service_cls, "_get_record_context", autospec=True, return_value="Context.") as context_mock, \
+                self._mocked_providers() as (pollinations_mock, _openai_mock):
+            self.service.rewrite("Fixed report.", False, False, "res.partner", "comment")
+        context_mock.assert_not_called()
+        self.assertNotIn("Context.", pollinations_mock.call_args.args[1])
+
+    def test_record_context_is_empty_by_default(self):
+        self.assertEqual(self.service._get_record_context("res.partner", "comment", False, {}), "")

@@ -41,6 +41,7 @@ export class AiRewriteDialog extends Component {
                 model: this.props.resModel,
                 field: this.props.fieldName,
                 res_id: this.props.resId || null,
+                record_values: this.props.recordValues,
             });
             if (result.error) {
                 this.state.error = result.error;
@@ -69,8 +70,10 @@ AiRewriteDialog.props = {
     resModel: { type: String, optional: true },
     fieldName: { type: String, optional: true },
     resId: { type: [Number, { value: false }], optional: true },
+    recordValues: { type: Object, optional: true },
 };
 AiRewriteDialog.defaultProps = {
     text: "",
     isHtml: false,
+    recordValues: {},
 };

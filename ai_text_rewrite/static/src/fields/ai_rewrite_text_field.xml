@@ -16,6 +16,7 @@
                     resModel="props.record.resModel"
                     fieldName="props.name"
                     resId="props.record.resId"
+                    record="props.record"
                 />
             </div>
             <t t-call="web.TextField"/>
@@ -36,6 +37,7 @@
                     resModel="props.record.resModel"
                     fieldName="props.name"
                     resId="props.record.resId"
+                    record="props.record"
                 />
             </div>
         </div>
