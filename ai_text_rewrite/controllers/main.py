@@ -10,7 +10,7 @@ _logger = logging.getLogger(__name__)
 class AiTextRewriteController(http.Controller):
 
     @http.route("/ai_text_rewrite/rewrite", type="json", auth="user")
-    def ai_rewrite(self, text, instruction=None, is_html=False):
+    def ai_rewrite(self, text, instruction=None, is_html=False, model=None, field=None, res_id=None):
         # auth="user" also lets authenticated portal/share users through (they are not "public"
         # but are not internal users either): restrict this LLM proxy to internal users only.
         if not request.env.user.has_group("base.group_user"):
@@ -19,8 +19,13 @@ class AiTextRewriteController(http.Controller):
             return {"error": _("Invalid text.")}
         if instruction is not None and not isinstance(instruction, str):
             return {"error": _("Invalid instruction.")}
+        # why: the style context is optional, a malformed one only loses the examples, never the rewrite
+        if not isinstance(model, str) or not isinstance(field, str):
+            model = field = None
+        if not isinstance(res_id, int) or isinstance(res_id, bool):
+            res_id = None
         try:
-            rewritten_text = request.env["ai.rewrite.service"].rewrite(text, instruction, bool(is_html))
+            rewritten_text = request.env["ai.rewrite.service"].rewrite(text, instruction, bool(is_html), model, field, res_id)
         except UserError as e:
             return {"error": str(e)}
         except Exception as e:

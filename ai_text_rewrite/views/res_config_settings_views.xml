@@ -52,6 +52,10 @@
                                 <field name="ai_rewrite_timeout" class="col-lg-3"/>
                             </div>
                         </setting>
+
+                        <setting help="Texts already written in the same field are sent to the AI service as style references">
+                            <field name="is_ai_rewrite_style_enabled"/>
+                        </setting>
                     </block>
                 </app>
             </xpath>

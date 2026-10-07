@@ -15,6 +15,9 @@ export class AiRewriteButton extends Component {
             text: this.props.value,
             isHtml: this.props.isHtml,
             onApply: this.props.onApply,
+            resModel: this.props.resModel,
+            fieldName: this.props.fieldName,
+            resId: this.props.resId,
         });
     }
 }
@@ -23,6 +26,9 @@ AiRewriteButton.props = {
     value: { type: String, optional: true },
     isHtml: { type: Boolean, optional: true },
     onApply: Function,
+    resModel: { type: String, optional: true },
+    fieldName: { type: String, optional: true },
+    resId: { type: [Number, { value: false }], optional: true },
 };
 AiRewriteButton.defaultProps = {
     value: "",

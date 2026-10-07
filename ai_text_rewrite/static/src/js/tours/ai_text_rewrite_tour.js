@@ -14,6 +14,9 @@ registry.category("web_tour.tours").add("ai_text_rewrite_replace", {
         run: "click",
     },
     {
+        trigger: '.o_ai_rewrite_dialog [data-test="ai-rewrite-original"] .o_ai_rewrite_original',
+    },
+    {
         // No leading ".modal" here: once a modal is visible, the tour runner scopes every
         // trigger lookup to `$('.modal:visible').last().find(trigger)` on its own, so a
         // trigger that repeats ".modal" ends up looking for a nested modal that never matches.
@@ -40,7 +43,8 @@ registry.category("web_tour.tours").add("ai_text_rewrite_replace", {
         // that the form went back to its saved (non-dirty) state.
         trigger: ".o_form_saved",
     },
-]);
+],
+});
 
 registry.category("web_tour.tours").add("ai_text_rewrite_settings_provider_switch", {
     // No "url": the wrapper navigates straight to the res.config.settings action beforehand,
@@ -48,16 +52,10 @@ registry.category("web_tour.tours").add("ai_text_rewrite_settings_provider_switc
     test: true,
     steps: () => [
     {
-        // Switch away from the default "openai" provider, onto "pollinations". The tour engine's
-        // own "text <value>" handling for a <select> (running_tour_action_helper.js, RunningTourActionHelper._text)
-        // matches an <option> by its real DOM value first: our options carry the JSON-encoded
-        // field value (e.g. `"pollinations"`, quotes included, from SelectionField's `stringify()`),
-        // so the trigger text must be that exact JSON literal, not the human-readable label - the
-        // label-matching fallback the helper falls back to is unreliable on this widget and silently
-        // resets the selection instead of raising, which is a different, non-crashing quirk than the
-        // one under test here.
+        // Switch away from the default "openai" provider, onto "pollinations". "select" matches the
+        // <option> DOM value, which SelectionField JSON-encodes: the quotes are part of the value.
         trigger: '.app_settings_block[data-key="ai_text_rewrite"] .o_field_widget[name="ai_rewrite_provider"] select',
-        run: 'text "pollinations"',
+        run: 'select "pollinations"',
     },
     {
         // Proves the form re-rendered instead of crashing: the pollinations-only warning is now
@@ -69,7 +67,7 @@ registry.category("web_tour.tours").add("ai_text_rewrite_settings_provider_switc
     {
         // Switch back to "openai": the direction originally reported as crashing.
         trigger: '.app_settings_block[data-key="ai_text_rewrite"] .o_field_widget[name="ai_rewrite_provider"] select',
-        run: 'text "openai"',
+        run: 'select "openai"',
     },
     {
         // Same proof in the other direction: the base_url/api_key/model group is visible again.
@@ -77,7 +75,8 @@ registry.category("web_tour.tours").add("ai_text_rewrite_settings_provider_switc
         // so the wrapper must set allow_end_on_form = True instead of expecting a save/discard here.
         trigger: '.app_settings_block[data-key="ai_text_rewrite"] .o_field_widget[name="ai_rewrite_base_url"] input',
     },
-]);
+],
+});
 
 registry.category("web_tour.tours").add("ai_text_rewrite_replace_html", {
     // No "url" here on purpose, same reasoning as "ai_text_rewrite_replace": the wrapper's
@@ -90,6 +89,9 @@ registry.category("web_tour.tours").add("ai_text_rewrite_replace_html", {
         // wysiwyg editor, not the shared dialog flow already covered by that other tour.
         trigger: '.o_field_widget[name="html"] .o_ai_rewrite_button',
         run: "click",
+    },
+    {
+        trigger: '.o_ai_rewrite_dialog [data-test="ai-rewrite-original"] .o_ai_rewrite_original',
     },
     {
         trigger: ".o_ai_rewrite_dialog textarea#ai_rewrite_instruction",

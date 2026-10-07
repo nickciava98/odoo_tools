@@ -10,7 +10,7 @@ import { Component, markup, useState } from "@odoo/owl";
 export class AiRewriteDialog extends Component {
     setup() {
         this.state = useState({
-            instruction: _t("Rewrite this text so that it is clearer and more professional."),
+            instruction: _t("Rewrite this text so that it is clearer, more professional and technically more thorough."),
             preview: "",
             error: "",
             isLoading: false,
@@ -19,6 +19,10 @@ export class AiRewriteDialog extends Component {
 
     get hasResult() {
         return Boolean(this.state.preview) && !this.state.error;
+    }
+
+    get originalValue() {
+        return markup(this.props.text);
     }
 
     get previewValue() {
@@ -34,6 +38,9 @@ export class AiRewriteDialog extends Component {
                 text: this.props.text,
                 instruction: this.state.instruction,
                 is_html: this.props.isHtml,
+                model: this.props.resModel,
+                field: this.props.fieldName,
+                res_id: this.props.resId || null,
             });
             if (result.error) {
                 this.state.error = result.error;
@@ -59,6 +66,9 @@ AiRewriteDialog.props = {
     isHtml: { type: Boolean, optional: true },
     onApply: Function,
     close: Function,
+    resModel: { type: String, optional: true },
+    fieldName: { type: String, optional: true },
+    resId: { type: [Number, { value: false }], optional: true },
 };
 AiRewriteDialog.defaultProps = {
     text: "",

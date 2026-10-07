@@ -13,6 +13,9 @@
                     value="props.record.data[props.name] or ''"
                     isHtml="false"
                     onApply="(value) => props.record.update({ [props.name]: value })"
+                    resModel="props.record.resModel"
+                    fieldName="props.name"
+                    resId="props.record.resId"
                 />
             </div>
             <t t-call="web.TextField"/>
@@ -30,6 +33,9 @@
                     value="props.record.data[props.name] or ''"
                     isHtml="false"
                     onApply="(value) => props.record.update({ [props.name]: value })"
+                    resModel="props.record.resModel"
+                    fieldName="props.name"
+                    resId="props.record.resId"
                 />
             </div>
         </div>

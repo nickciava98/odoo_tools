@@ -5,8 +5,8 @@ from urllib.parse import quote
 import requests
 
 from odoo import models, api
-from odoo.exceptions import UserError
-from odoo.tools import html_sanitize
+from odoo.exceptions import AccessError, UserError
+from odoo.tools import html2plaintext, html_sanitize
 
 _logger = logging.getLogger(__name__)
 
@@ -18,6 +18,11 @@ POLLINATIONS_QUOTA_STATUS_CODES = (402, 403, 429)
 OPENAI_UNAUTHORIZED_STATUS_CODES = (401,)
 OPENAI_MODEL_NOT_FOUND_STATUS_CODES = (404,)
 RESPONSE_DETAIL_LENGTH = 300
+STYLE_EXAMPLE_LIMIT = 10
+STYLE_EXAMPLE_MIN_LENGTH = 20
+STYLE_EXAMPLE_MAX_LENGTH = 1000
+STYLE_EXAMPLES_MAX_LENGTH = 6000
+STYLE_FIELD_TYPES = ("char", "html", "text")
 MARKDOWN_FENCE_RE = re.compile(r"^```[a-zA-Z]*\n?|\n?```$")
 
 
@@ -27,7 +32,7 @@ class AiRewriteService(models.AbstractModel):
 
     @api.private
     @api.model
-    def rewrite(self, text, instruction=False, is_html=False):
+    def rewrite(self, text, instruction=False, is_html=False, model=False, field=False, res_id=False):
         # why: public + unprivate would be callable over RPC by any logged in user, bypassing the
         # route's own checks and spending the configured (possibly paid) API key on arbitrary input
         if not text or not text.strip():
@@ -38,6 +43,13 @@ class AiRewriteService(models.AbstractModel):
 
         if len(prompt) > MAX_INPUT_LENGTH:
             raise UserError(self.env._("The text is too long to be rewritten (maximum %s characters).", MAX_INPUT_LENGTH))
+
+        # why: the free provider caps the whole prompt at a few hundred chars, examples would never fit
+        if model and field and settings["style_enabled"] and settings["provider"] == "openai":
+            budget = min(STYLE_EXAMPLES_MAX_LENGTH, MAX_INPUT_LENGTH - len(prompt))
+            style_examples = self._get_style_examples(model, field, res_id, text, budget)
+            if style_examples:
+                prompt = self._build_ai_prompt(text, instruction, is_html, settings, style_examples)
 
         # why: no other trace of an outbound call exists; needed to explain a cost spike or a data query,
         # without logging the text itself or the API key
@@ -59,10 +71,67 @@ class AiRewriteService(models.AbstractModel):
             "api_key": config_parameter_model.get_param("ai_text_rewrite.api_key"),
             "model": config_parameter_model.get_param("ai_text_rewrite.model"),
             "system_prompt": config_parameter_model.get_param("ai_text_rewrite.system_prompt"),
-            "timeout": int(config_parameter_model.get_param("ai_text_rewrite.timeout", 60))
+            "timeout": int(config_parameter_model.get_param("ai_text_rewrite.timeout", 60)),
+            "style_enabled": config_parameter_model.get_param("ai_text_rewrite.style_enabled", "True") != "False"
         }
 
-    def _build_ai_prompt(self, text, instruction, is_html, settings=None):
+    def _get_style_examples(self, model, field, res_id, text, budget):
+        if model not in self.env:
+            return []
+
+        record_model = self.env[model]
+        model_field = record_model._fields.get(field)
+
+        if not model_field or model_field.type not in STYLE_FIELD_TYPES or not model_field.store:
+            return []
+
+        try:
+            record_model.check_access("read")
+            record_model.check_field_access_rights("read", [field])
+        except AccessError:
+            return []
+
+        domain = [(field, "!=", False)]
+
+        if res_id:
+            domain.append(("id", "!=", res_id))
+
+        # why: the user's own records first, they carry the writing style to imitate
+        own_record_ids = record_model.search_fetch(
+            domain + [("create_uid", "=", self.env.uid)],
+            [field],
+            limit=STYLE_EXAMPLE_LIMIT * 3,
+            order="write_date desc, id desc"
+        )
+        other_record_ids = record_model.search_fetch(
+            domain + [("create_uid", "!=", self.env.uid)],
+            [field],
+            limit=STYLE_EXAMPLE_LIMIT * 3,
+            order="write_date desc, id desc"
+        )
+        current_text = self._style_plain_text(text, model_field.type)
+        examples = []
+        used_length = 0
+
+        for record in own_record_ids + other_record_ids:
+            example = self._style_plain_text(record[field], model_field.type)[:STYLE_EXAMPLE_MAX_LENGTH]
+            if len(example) < STYLE_EXAMPLE_MIN_LENGTH or example == current_text or example in examples:
+                continue
+            if used_length + len(example) > budget:
+                break
+            examples.append(example)
+            used_length += len(example)
+            if len(examples) >= STYLE_EXAMPLE_LIMIT:
+                break
+
+        return examples
+
+    def _style_plain_text(self, value, field_type):
+        if field_type == "html":
+            value = html2plaintext(value or "")
+        return (value or "").strip()
+
+    def _build_ai_prompt(self, text, instruction, is_html, settings=None, style_examples=None):
         # why: settings is optional so direct 3-argument calls (as in the original contract) still
         # work; rewrite() passes its own settings down to avoid a second round of get_param calls
         settings = settings or self._get_ai_settings()
@@ -76,6 +145,18 @@ class AiRewriteService(models.AbstractModel):
 
         if is_html:
             parts.append(self.env._("The text is HTML markup: keep the tags and only rewrite the visible content."))
+
+        if style_examples:
+            parts.append(
+                "Style references: other texts written in this same field of the application. Match their "
+                "vocabulary, terminology, tone, structure, length and level of technical detail. They are a style "
+                "guide only: never copy a fact, a name, a code or a number from them into the rewrite.\n\n%s"
+                % "\n\n".join("<reference>\n%s\n</reference>" % example for example in style_examples)
+            )
+            parts.append("Text to rewrite:")
+        else:
+            # why: without references nothing tells the model a field holds labels, which it would inflate
+            parts.append("No style references are available: a short label of a few words stays a short label, on one line and with no final full stop. Correct and sharpen it, never develop it into sentences.")
 
         parts.append(text)
         return "\n\n".join(parts)

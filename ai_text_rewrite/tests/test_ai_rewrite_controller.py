@@ -120,3 +120,19 @@ class TestAiRewriteController(HttpCase):
         self.assertNotIn("text", result)
         self.assertTrue(result.get("error"))
         self._assert_no_provider_call(pollinations_mock, openai_mock)
+
+    def test_route_forwards_the_style_context_to_the_service(self):
+        # Wiring: the dialog sends model, field and record so the service can pick the style references.
+        self.authenticate("ai_rewrite_tester", "ai_rewrite_tester_pwd")
+        service_cls = type(self.env["ai.rewrite.service"])
+        with patch.object(service_cls, "rewrite", autospec=True, return_value="Rewritten.") as rewrite_mock:
+            self._call_route(text="Sentence.", model="res.partner", field="comment", res_id=7)
+        self.assertEqual(rewrite_mock.call_args.args[1:], ("Sentence.", None, False, "res.partner", "comment", 7))
+
+    def test_route_drops_a_malformed_style_context(self):
+        self.authenticate("ai_rewrite_tester", "ai_rewrite_tester_pwd")
+        service_cls = type(self.env["ai.rewrite.service"])
+        with patch.object(service_cls, "rewrite", autospec=True, return_value="Rewritten.") as rewrite_mock:
+            _response, payload = self._call_route(text="Sentence.", model=["res.partner"], field="comment", res_id="7")
+        self.assertEqual(payload.get("result"), {"text": "Rewritten."})
+        self.assertEqual(rewrite_mock.call_args.args[1:], ("Sentence.", None, False, None, None, None))

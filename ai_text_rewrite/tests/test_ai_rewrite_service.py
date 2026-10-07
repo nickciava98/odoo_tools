@@ -198,7 +198,7 @@ class TestAiRewriteService(TransactionCase):
         # Contract: _get_ai_settings() is the single source the two providers read from.
         self.assertEqual(
             set(self.service._get_ai_settings()),
-            {"provider", "base_url", "api_key", "model", "system_prompt", "timeout"}
+            {"provider", "base_url", "api_key", "model", "system_prompt", "timeout", "style_enabled"}
         )
 
     def test_settings_timeout_is_an_integer(self):
