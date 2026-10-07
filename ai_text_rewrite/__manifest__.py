@@ -1,7 +1,7 @@
 {
     "name": "AI Text Rewrite",
     "summary": "Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings",
-    "version": "16.0.1.4.1",
+    "version": "16.0.1.5.0",
     "author": "Niccolò Ciavarella",
     "website": "https://nciavarella.odoo-cloud.ovh",
     "license": "LGPL-3",

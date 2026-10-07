@@ -14,6 +14,9 @@ tour.register("ai_text_rewrite_replace", {
         run: "click",
     },
     {
+        trigger: '.o_ai_rewrite_dialog [data-test="ai-rewrite-original"] .o_ai_rewrite_original',
+    },
+    {
         // No leading ".modal" here: once a modal is visible, the tour runner scopes every
         // trigger lookup to `$('.modal:visible').last().find(trigger)` on its own, so a
         // trigger that repeats ".modal" ends up looking for a nested modal that never matches.
@@ -90,6 +93,9 @@ tour.register("ai_text_rewrite_replace_html", {
         // wysiwyg editor, not the shared dialog flow already covered by that other tour.
         trigger: '.o_field_widget[name="html"] .o_ai_rewrite_button',
         run: "click",
+    },
+    {
+        trigger: '.o_ai_rewrite_dialog [data-test="ai-rewrite-original"] .o_ai_rewrite_original',
     },
     {
         trigger: ".o_ai_rewrite_dialog textarea#ai_rewrite_instruction",

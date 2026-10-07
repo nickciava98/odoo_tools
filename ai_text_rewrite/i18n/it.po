@@ -48,6 +48,8 @@ msgid "AI Provider"
 msgstr "Provider AI"
 
 #. module: ai_text_rewrite
+#. odoo-javascript
+#: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.js:0
 #: model:ir.actions.act_window,name:ai_text_rewrite.action_ai_rewrite_settings
 #: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
 msgid "AI Rewrite"
@@ -191,8 +193,8 @@ msgstr "Timeout richiesta (secondi)"
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.js:0
 #, python-format
-msgid "Rewrite this text so that it is clearer and more professional."
-msgstr "Riscrivi questo testo in modo che sia più chiaro e professionale."
+msgid "Rewrite this text so that it is clearer, more professional and technically more thorough."
+msgstr "Riscrivi questo testo in modo che sia più chiaro, professionale e tecnicamente più approfondito."
 
 #. module: ai_text_rewrite
 #. odoo-javascript
@@ -337,3 +339,20 @@ msgid ""
 msgstr ""
 "Il servizio AI non conosce il modello configurato, oppure la chiave API non vi ha accesso. Controlla il nome del modello nelle Impostazioni.\n"
 "%s"
+
+#. module: ai_text_rewrite
+#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__is_ai_rewrite_style_enabled
+msgid "Learn from Existing Texts"
+msgstr "Impara dai testi esistenti"
+
+#. module: ai_text_rewrite
+#: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
+msgid "Texts already written in the same field are sent to the AI service as style references"
+msgstr "I testi già scritti nello stesso campo vengono inviati al servizio AI come riferimenti di stile"
+
+#. module: ai_text_rewrite
+#. odoo-javascript
+#: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
+#, python-format
+msgid "Original text"
+msgstr "Testo originale"

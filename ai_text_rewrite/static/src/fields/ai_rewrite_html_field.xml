@@ -8,6 +8,9 @@
                     value="props.value or ''"
                     isHtml="true"
                     onApply="(value) => props.update(value)"
+                    resModel="props.record.resModel"
+                    fieldName="props.name"
+                    resId="props.record.resId"
                 />
             </div>
             <t t-call="web_editor.HtmlField"/>

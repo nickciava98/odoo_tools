@@ -2,7 +2,7 @@
 <templates xml:space="preserve">
 
     <t t-name="ai_text_rewrite.AiRewriteDialog" owl="1">
-        <Dialog title="'AI Rewrite'" size="'md'">
+        <Dialog title="title" size="'md'">
             <div class="o_ai_rewrite_dialog">
                 <div class="mb-3">
                     <label class="form-label" for="ai_rewrite_instruction">Instruction</label>
@@ -15,6 +15,11 @@
                     <p class="text-muted small mt-1 mb-0" data-test="ai-rewrite-destination-notice">
                         This text will be sent to the AI service configured in Settings to be rewritten.
                     </p>
+                </div>
+                <div class="mb-3" data-test="ai-rewrite-original">
+                    <label class="form-label">Original text</label>
+                    <div t-if="props.isHtml" class="o_ai_rewrite_preview o_ai_rewrite_original border rounded p-2 text-muted" t-out="originalValue"/>
+                    <textarea t-else="" class="form-control o_ai_rewrite_preview o_ai_rewrite_original text-muted" rows="4" readonly="readonly" t-esc="props.text"/>
                 </div>
                 <button type="button"
                     class="btn btn-primary mb-3"
