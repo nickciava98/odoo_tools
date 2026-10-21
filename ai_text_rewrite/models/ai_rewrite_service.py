@@ -2,8 +2,6 @@ import logging
 import re
 from urllib.parse import quote
 
-import requests
-
 from odoo import models, api
 from odoo.exceptions import AccessError, UserError
 from odoo.tools import html2plaintext, html_sanitize
@@ -15,9 +13,6 @@ POLLINATIONS_MAX_INPUT_LENGTH = 500
 POLLINATIONS_URL = "https://text.pollinations.ai/%s"
 POLLINATIONS_REFERER = "odoo-ai-text-rewrite"
 POLLINATIONS_QUOTA_STATUS_CODES = (402, 403, 429)
-OPENAI_UNAUTHORIZED_STATUS_CODES = (401,)
-OPENAI_MODEL_NOT_FOUND_STATUS_CODES = (404,)
-RESPONSE_DETAIL_LENGTH = 300
 STYLE_EXAMPLE_LIMIT = 10
 STYLE_EXAMPLE_MIN_LENGTH = 20
 STYLE_EXAMPLE_MAX_LENGTH = 1000
@@ -73,12 +68,9 @@ class AiRewriteService(models.AbstractModel):
         # why: only the config parameters are read with elevated rights, nothing else
         config_parameter_model = self.env["ir.config_parameter"].sudo()
         return {
+            **self.env["ai.provider"]._get_provider_settings(),
             "provider": config_parameter_model.get_param("ai_text_rewrite.provider", "openai"),
-            "base_url": config_parameter_model.get_param("ai_text_rewrite.base_url"),
-            "api_key": config_parameter_model.get_param("ai_text_rewrite.api_key"),
-            "model": config_parameter_model.get_param("ai_text_rewrite.model"),
             "system_prompt": config_parameter_model.get_param("ai_text_rewrite.system_prompt"),
-            "timeout": int(config_parameter_model.get_param("ai_text_rewrite.timeout", 60)),
             "style_enabled": config_parameter_model.get_param("ai_text_rewrite.style_enabled", "True") != "False"
         }
 
@@ -189,7 +181,7 @@ class AiRewriteService(models.AbstractModel):
                 POLLINATIONS_MAX_INPUT_LENGTH
             ))
 
-        response = self._perform_provider_request(
+        response = self.env["ai.provider"]._perform_provider_request(
             "get",
             POLLINATIONS_URL % quote(prompt),
             {"headers": {"Referer": POLLINATIONS_REFERER}, "timeout": settings["timeout"]},
@@ -201,32 +193,11 @@ class AiRewriteService(models.AbstractModel):
         return response.text
 
     def _call_openai_compatible(self, prompt, settings):
-        if not settings["base_url"] or not settings["model"]:
-            raise UserError(self.env._("Please configure the API base URL and the model name in Settings."))
-
-        headers = {"Content-Type": "application/json"}
-
-        if settings["api_key"]:
-            headers["Authorization"] = "Bearer %s" % settings["api_key"]
-
-        body = {
-            "model": settings["model"],
-            "messages": [
-                {"role": "system", "content": settings["system_prompt"] or ""},
-                {"role": "user", "content": self._strip_leading_system_prompt(prompt, settings)}
-            ],
-            "temperature": 0.3
-        }
-
-        response = self._perform_provider_request(
-            "post",
-            settings["base_url"].rstrip("/") + "/chat/completions",
-            {"headers": headers, "json": body, "timeout": settings["timeout"]},
-            OPENAI_UNAUTHORIZED_STATUS_CODES,
-            self.env._("The configured API key was rejected, please check it in Settings."),
-            self.env._("The configured AI service could not be reached, please check the settings.")
-        )
-        rewritten = (response.json()["choices"][0]["message"].get("content") or "").strip()
+        messages = [
+            {"role": "system", "content": settings["system_prompt"] or ""},
+            {"role": "user", "content": self._strip_leading_system_prompt(prompt, settings)}
+        ]
+        rewritten = (self.env["ai.provider"]._chat_completion(messages, temperature=0.3).get("content") or "").strip()
 
         if not rewritten:
             raise UserError(self.env._("The AI service returned an empty answer, please try again."))
@@ -242,43 +213,6 @@ class AiRewriteService(models.AbstractModel):
         if prefix and prompt.startswith(prefix):
             return prompt[len(prefix):]
         return prompt
-
-    def _response_detail(self, response):
-        if response is None:
-            return ""
-
-        try:
-            payload = response.json()
-        except ValueError:
-            return response.text[:RESPONSE_DETAIL_LENGTH]
-
-        error = payload.get("error") if isinstance(payload, dict) else None
-
-        if isinstance(error, dict) and error.get("message"):
-            return error["message"][:RESPONSE_DETAIL_LENGTH]
-
-        return response.text[:RESPONSE_DETAIL_LENGTH]
-
-    def _perform_provider_request(self, http_method, url, request_kwargs, quota_status_codes, quota_message, generic_message):
-        try:
-            response = getattr(requests, http_method)(url, **request_kwargs)
-            response.raise_for_status()
-        except requests.exceptions.HTTPError as e:
-            # why: the provider explains itself in the body, so logging the status alone
-            # turns a precise error ("model does not exist") into an unreadable 404
-            _logger.exception("AI rewrite provider call failed: %s\n%s", e, self._response_detail(e.response))
-            if e.response is not None and e.response.status_code in quota_status_codes:
-                raise UserError(quota_message) from e
-            if e.response is not None and e.response.status_code in OPENAI_MODEL_NOT_FOUND_STATUS_CODES:
-                raise UserError(self.env._(
-                    "The AI service does not know the configured model, or the API key has no access to it. "
-                    "Check the model name in Settings.\n%s", self._response_detail(e.response))) from e
-            raise UserError(generic_message) from e
-        except Exception as e:
-            _logger.exception("AI rewrite provider call failed: %s", e)
-            raise UserError(generic_message) from e
-
-        return response
 
     def _clean_ai_response(self, raw, is_html):
         cleaned = MARKDOWN_FENCE_RE.sub("", raw.strip()).strip()

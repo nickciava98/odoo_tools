@@ -46,6 +46,16 @@ class TestAiRewriteConfigSettings(TransactionCase):
         self.assertTrue(settings_id, "The Settings page could not even build its transient record")
         settings_id.execute()
 
+    def test_endpoint_fields_moved_to_the_ai_provider_block(self):
+        # 2.0: one endpoint configuration for every ai_* module, in the AI Provider block of ai_base;
+        # a second set of fields here would write keys nobody reads anymore.
+        for field_name in ("ai_rewrite_base_url", "ai_rewrite_api_key", "ai_rewrite_model", "ai_rewrite_timeout"):
+            with self.subTest(field=field_name):
+                self.assertNotIn(field_name, self.settings_model._fields)
+        for field_name in ("ai_rewrite_provider", "ai_rewrite_system_prompt", "is_ai_rewrite_style_enabled", "ai_provider_base_url"):
+            with self.subTest(field=field_name):
+                self.assertIn(field_name, self.settings_model._fields)
+
     # ------------------------------------------------------------------
     # 2. The system prompt travels between the page and the service
     # ------------------------------------------------------------------
@@ -75,7 +85,7 @@ class TestAiRewriteConfigSettings(TransactionCase):
         self.assertIn("Invoice 12 is late.", self.service._build_ai_prompt("Invoice 12 is late.", False, False))
 
 
-ICON_ASSERT_JS = """
+ICON_ASSERT_JS = r"""
 (async () => {
     await new Promise((r) => setTimeout(r, 1500));
     const tab = document.querySelector('.settings_tab .tab[data-key="ai_text_rewrite"] .icon');

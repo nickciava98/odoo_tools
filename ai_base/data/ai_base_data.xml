@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record id="ai_base_base_url_parameter" model="ir.config_parameter">
+            <field name="key">ai_base.base_url</field>
+            <field name="value">https://api.groq.com/openai/v1</field>
+        </record>
+
+        <record id="ai_base_model_parameter" model="ir.config_parameter">
+            <field name="key">ai_base.model</field>
+            <field name="value">openai/gpt-oss-120b</field>
+        </record>
+
+        <record id="ai_base_timeout_parameter" model="ir.config_parameter">
+            <field name="key">ai_base.timeout</field>
+            <field name="value">60</field>
+        </record>
+    </data>
+</odoo>

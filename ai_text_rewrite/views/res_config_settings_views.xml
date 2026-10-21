@@ -2,40 +2,13 @@
     <record id="res_config_settings_view_form" model="ir.ui.view">
         <field name="name">res.config.settings.view.form.inherit.ai.text.rewrite</field>
         <field name="model">res.config.settings</field>
-        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
-
+        <field name="inherit_id" ref="ai_base.res_config_settings_view_form_ai_base"/>
         <field name="arch" type="xml">
-            <xpath expr="//form" position="inside">
+            <xpath expr="//app[@name='ai_base']" position="after">
                 <app string="AI Rewrite" name="ai_text_rewrite" groups="base.group_system">
                     <block title="AI Text Rewrite">
                         <setting string="Provider" help="AI service used to rewrite the text">
                             <field name="ai_rewrite_provider"/>
-
-                            <div class="content-group" invisible="ai_rewrite_provider != 'openai'">
-                                <div class="row mt8">
-                                    <label for="ai_rewrite_base_url" class="col-lg-4 o_light_label"/>
-                                    <field name="ai_rewrite_base_url" class="col-lg-8"/>
-                                </div>
-
-                                <div class="row mt8">
-                                    <label for="ai_rewrite_api_key" class="col-lg-4 o_light_label"/>
-                                    <field name="ai_rewrite_api_key" password="True" class="col-lg-8"/>
-                                </div>
-
-                                <div class="row">
-                                    <div class="offset-lg-4 col-lg-8">
-                                        <span class="text-muted">
-                                            Get a free key at
-                                            <a href="https://console.groq.com/keys" target="_blank" class="o_doc_link">console.groq.com/keys</a>
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <div class="row mt8">
-                                    <label for="ai_rewrite_model" class="col-lg-4 o_light_label"/>
-                                    <field name="ai_rewrite_model" class="col-lg-8"/>
-                                </div>
-                            </div>
 
                             <p class="text-muted mt8" data-test="pollinations-warning" invisible="ai_rewrite_provider != 'pollinations'">
                                 <i class="fa fa-exclamation-triangle" title="Warning"/>
@@ -46,11 +19,6 @@
                         <setting string="Rewrite Instructions"
                                  help="System prompt shared by every field with the AI rewrite button">
                             <field name="ai_rewrite_system_prompt" nolabel="1"/>
-
-                            <div class="row mt8">
-                                <label for="ai_rewrite_timeout" class="col-lg-4 o_light_label"/>
-                                <field name="ai_rewrite_timeout" class="col-lg-3"/>
-                            </div>
                         </setting>
 
                         <setting help="Texts already written in the same field are sent to the AI service as style references">

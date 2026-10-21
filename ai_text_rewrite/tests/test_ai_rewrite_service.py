@@ -20,6 +20,10 @@ from odoo.addons.ai_text_rewrite.models.ai_rewrite_service import MAX_INPUT_LENG
 
 # Namespace where the symbols are *used*: patch here, not where they are defined.
 _MODULE = "odoo.addons.ai_text_rewrite.models.ai_rewrite_service"
+# The HTTP layer moved to ai_base in 18.0.2.0.0: requests is used (and patched) there.
+_PROVIDER_MODULE = "odoo.addons.ai_base.models.ai_provider"
+# Keys owned by ai_base since 18.0.2.0.0; the other settings stay on ai_text_rewrite.*.
+PROVIDER_KEYS = ("base_url", "api_key", "model", "timeout")
 
 SYSTEM_PROMPT = "SENTINEL SYSTEM PROMPT: never change a number."
 POLLINATIONS_URL_PREFIX = "https://text.pollinations.ai/"
@@ -42,9 +46,9 @@ class TestAiRewriteService(TransactionCase):
     # ------------------------------------------------------------------
 
     def _set_settings(self, **values):
-        """Write the module config parameters; a falsy value deletes the parameter."""
+        """Write the config parameters, each on the module owning it; a falsy value deletes the parameter."""
         for key, value in values.items():
-            self.config_param.set_param("ai_text_rewrite.%s" % key, value)
+            self.config_param.set_param("%s.%s" % ("ai_base" if key in PROVIDER_KEYS else "ai_text_rewrite", key), value)
         return True
 
     def _use_openai(self, **values):
@@ -61,10 +65,10 @@ class TestAiRewriteService(TransactionCase):
 
     @contextmanager
     def _mocked_requests(self):
-        """Replace the requests module seen by the service, so a real HTTP call is impossible."""
+        """Replace the requests module seen by ai.provider, so a real HTTP call is impossible."""
         requests_mock = MagicMock(name="requests")
         requests_mock.exceptions = requests.exceptions
-        with patch("%s.requests" % _MODULE, requests_mock):
+        with patch("%s.requests" % _PROVIDER_MODULE, requests_mock):
             yield requests_mock
 
     @contextmanager
@@ -171,18 +175,43 @@ class TestAiRewriteService(TransactionCase):
     # 2. Settings
     # ------------------------------------------------------------------
 
-    def test_shipped_data_selects_the_openai_provider(self):
-        # The free service was measured refusing real prompts (402 above ~580 chars), so a fresh install
-        # must point at the paid-tier endpoint. Read the shipped file and not the stored parameter:
-        # data/ is noupdate="1", so a database installed before the switch still holds the old value.
-        with file_open("ai_text_rewrite/data/ai_rewrite_data.xml", "rb") as data_file:
-            shipped_values = {
+    def _shipped_parameters(self, data_path):
+        with file_open(data_path, "rb") as data_file:
+            return {
                 record.findtext("field[@name='key']"): record.findtext("field[@name='value']")
                 for record in etree.parse(data_file).xpath("//record[@model='ir.config_parameter']")
             }
+
+    def test_shipped_data_selects_the_openai_provider(self):
+        # The free service was measured refusing real prompts (402 above ~580 chars), so a fresh install
+        # must point at the paid-tier endpoint. Read the shipped files and not the stored parameters:
+        # data/ is noupdate="1", so a database installed before the switch still holds the old value.
+        # Since 18.0.2.0.0 the endpoint itself ships with ai_base.
+        shipped_values = self._shipped_parameters("ai_text_rewrite/data/ai_rewrite_data.xml")
+        provider_values = self._shipped_parameters("ai_base/data/ai_base_data.xml")
         self.assertEqual(shipped_values.get("ai_text_rewrite.provider"), "openai")
-        self.assertEqual(shipped_values.get("ai_text_rewrite.base_url"), GROQ_BASE_URL)
-        self.assertTrue(shipped_values.get("ai_text_rewrite.model"))
+        self.assertEqual(provider_values.get("ai_base.base_url"), GROQ_BASE_URL)
+        self.assertTrue(provider_values.get("ai_base.model"))
+
+    def test_shipped_data_no_longer_carries_the_provider_keys(self):
+        # TS 2.0: a fresh install recreating ai_text_rewrite.base_url/model/timeout would leave a second,
+        # dead copy of the endpoint configuration that nobody reads and everybody can mistake for the real one.
+        shipped_values = self._shipped_parameters("ai_text_rewrite/data/ai_rewrite_data.xml")
+        for key in PROVIDER_KEYS:
+            with self.subTest(key=key):
+                self.assertNotIn("ai_text_rewrite.%s" % key, shipped_values)
+        self.assertIn("ai_text_rewrite.system_prompt", shipped_values)
+
+    def test_settings_read_the_endpoint_from_ai_base(self):
+        # 2.0: base_url/api_key/model/timeout come from the shared provider, under the same dict keys as before.
+        self._set_settings(base_url="https://llm.example.invalid/v1", api_key="sk-shared", model="shared-model", timeout=17)
+        self.config_param.set_param("ai_text_rewrite.base_url", "https://stale.example.invalid/v1")
+        self.config_param.set_param("ai_text_rewrite.model", "stale-model")
+        settings = self.service._get_ai_settings()
+        self.assertEqual(settings["base_url"], "https://llm.example.invalid/v1")
+        self.assertEqual(settings["api_key"], "sk-shared")
+        self.assertEqual(settings["model"], "shared-model")
+        self.assertEqual(settings["timeout"], 17)
 
     def test_default_provider_is_openai_when_the_parameter_is_missing(self):
         # An administrator clearing the parameter must not silently fall back to the free service.
@@ -372,7 +401,7 @@ class TestAiRewriteService(TransactionCase):
         requests_mock.post.assert_not_called()
         requests_mock.get.assert_not_called()
 
-    @mute_logger(_MODULE)
+    @mute_logger(_MODULE, _PROVIDER_MODULE)
     def test_provider_failure_is_reported_as_a_user_error(self):
         # Contract "Regole comuni": a provider outage must reach the dialog as a readable message, never as a traceback.
         self._use_pollinations()
@@ -430,7 +459,7 @@ class TestAiRewriteService(TransactionCase):
             result = self.service.rewrite("t" * (POLLINATIONS_MAX_INPUT_LENGTH * 4))
         self.assertEqual(result, "Rewritten sentence.")
 
-    @mute_logger(_MODULE)
+    @mute_logger(_MODULE, _PROVIDER_MODULE)
     def test_pollinations_quota_errors_get_a_dedicated_message(self):
         # 402/403/429 mean "the shared free service refused you": the user must be told to configure a key,
         # not that the service is temporarily down and worth retrying as is.
@@ -445,7 +474,7 @@ class TestAiRewriteService(TransactionCase):
                 self.assertNotIn("Traceback", quota_message)
                 self.assertNotEqual(quota_message, generic_message, "HTTP %s is a quota refusal, not a generic outage" % status_code)
 
-    @mute_logger(_MODULE)
+    @mute_logger(_MODULE, _PROVIDER_MODULE)
     def test_openai_rejected_api_key_gets_a_dedicated_message(self):
         # A 401 is a wrong key in Settings, telling the user the endpoint is unreachable sends them hunting the network.
         self._use_openai(api_key="wrong-api-key")
@@ -536,7 +565,7 @@ class TestAiRewriteService(TransactionCase):
                 self.service.rewrite("Rewrite this text please")
         return str(raised.exception)
 
-    @mute_logger(_MODULE)
+    @mute_logger(_MODULE, _PROVIDER_MODULE)
     def test_a_missing_model_says_so_instead_of_blaming_the_connection(self):
         # A 404 from an OpenAI-compatible endpoint means the model is unknown, not that the service is
         # unreachable: the old wording sent the reader looking for a network problem that does not exist.
@@ -547,7 +576,7 @@ class TestAiRewriteService(TransactionCase):
         self.assertIn("does not know the configured model", message)
         self.assertIn("some-model", message)
 
-    @mute_logger(_MODULE)
+    @mute_logger(_MODULE, _PROVIDER_MODULE)
     def test_a_non_json_body_is_still_reported(self):
         # Not every gateway answers JSON; the raw body is more useful than nothing at all.
         self._use_openai()
@@ -555,7 +584,30 @@ class TestAiRewriteService(TransactionCase):
         self.assertIn("404 Not Found", message)
 
     def test_a_response_detail_without_a_response_is_empty(self):
-        self.assertEqual(self.service._response_detail(None), "")
+        self.assertEqual(self.env["ai.provider"]._response_detail(None), "")
+
+    def test_the_http_helpers_moved_to_ai_base(self):
+        # 2.0: a second copy of the HTTP layer here would drift from the one the chatbot uses.
+        self.assertFalse(hasattr(self.service, "_perform_provider_request"))
+        self.assertFalse(hasattr(self.service, "_response_detail"))
+
+    def test_openai_call_goes_through_the_shared_provider(self):
+        # 2.0: the OpenAI-compatible path is ai.provider._chat_completion, with the same two messages and temperature.
+        self._use_openai(system_prompt=SYSTEM_PROMPT)
+        settings = self.service._get_ai_settings()
+        provider_cls = type(self.env["ai.provider"])
+        with patch.object(provider_cls, "_chat_completion", autospec=True, return_value={"role": "assistant", "content": " Rewritten. "}) as completion_mock:
+            raw = self.service._call_openai_compatible("Rewrite this text please", settings)
+        self.assertEqual(raw, "Rewritten.")
+        completion_mock.assert_called_once()
+        call_args = completion_mock.call_args
+        messages = call_args.kwargs.get("messages") or call_args.args[1]
+        self.assertEqual(messages, [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": "Rewrite this text please"}
+        ])
+        self.assertEqual(call_args.kwargs.get("temperature", 0.3), 0.3)
+        self.assertFalse(call_args.kwargs.get("tools"))
 
     def test_an_empty_answer_is_refused_instead_of_blanking_the_field(self):
         # Reasoning models can spend their whole budget thinking and answer with an empty content:

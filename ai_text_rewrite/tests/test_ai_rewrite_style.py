@@ -24,8 +24,8 @@ class TestAiRewriteStyle(TransactionCase):
         super().setUpClass()
         config_param = cls.env["ir.config_parameter"].sudo()
         config_param.set_param("ai_text_rewrite.provider", "openai")
-        config_param.set_param("ai_text_rewrite.base_url", "https://api.groq.com/openai/v1")
-        config_param.set_param("ai_text_rewrite.model", "llama-3.3-70b-versatile")
+        config_param.set_param("ai_base.base_url", "https://api.groq.com/openai/v1")
+        config_param.set_param("ai_base.model", "llama-3.3-70b-versatile")
         cls.user_id = cls.env["res.users"].create({
             "name": "AI Style Tester",
             "login": "ai_style_tester",
@@ -88,7 +88,7 @@ class TestAiRewriteStyle(TransactionCase):
             self.assertNotIn("<reference>", prompt)
 
     def test_a_non_stored_field_gives_no_examples(self):
-        self.assertFalse(self.service._get_style_examples("res.partner", "display_name", False, CURRENT_NOTE, 6000))
+        self.assertFalse(self.service._get_style_examples("res.partner", "contact_address", False, CURRENT_NOTE, 6000))
 
     def test_a_model_the_user_cannot_read_gives_no_examples(self):
         self.assertFalse(self.service._get_style_examples("ir.config_parameter", "value", False, CURRENT_NOTE, 6000))
