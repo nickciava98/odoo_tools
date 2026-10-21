@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 16.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-09-02 19:02+0000\n"
-"PO-Revision-Date: 2026-09-02 19:02+0000\n"
+"POT-Creation-Date: 2026-10-21 07:29+0000\n"
+"PO-Revision-Date: 2026-10-21 07:29+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "Language: it\n"
@@ -52,6 +52,7 @@ msgstr "Provider AI"
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.js:0
 #: model:ir.actions.act_window,name:ai_text_rewrite.action_ai_rewrite_settings
 #: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
+#, python-format
 msgid "AI Rewrite"
 msgstr "Riscrittura AI"
 
@@ -69,16 +70,6 @@ msgstr "Servizio di riscrittura testi con AI"
 #: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
 msgid "AI service used to rewrite the text"
 msgstr "Servizio AI usato per riscrivere il testo"
-
-#. module: ai_text_rewrite
-#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__ai_rewrite_base_url
-msgid "API Base URL"
-msgstr "URL base API"
-
-#. module: ai_text_rewrite
-#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__ai_rewrite_api_key
-msgid "API Key"
-msgstr "Chiave API"
 
 #. module: ai_text_rewrite
 #. odoo-python
@@ -120,11 +111,6 @@ msgid "Generating..."
 msgstr "Generazione in corso..."
 
 #. module: ai_text_rewrite
-#: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
-msgid "Get a free key at"
-msgstr "Ottieni una chiave gratuita su"
-
-#. module: ai_text_rewrite
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
 #, python-format
@@ -146,9 +132,9 @@ msgid "Invalid text."
 msgstr "Testo non valido."
 
 #. module: ai_text_rewrite
-#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__ai_rewrite_model
-msgid "Model"
-msgstr "Modello"
+#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__is_ai_rewrite_style_enabled
+msgid "Learn from Existing Texts"
+msgstr "Impara dai testi esistenti"
 
 #. module: ai_text_rewrite
 #: model:ir.model.fields.selection,name:ai_text_rewrite.selection__res_config_settings__ai_rewrite_provider__openai
@@ -156,12 +142,11 @@ msgid "OpenAI-compatible endpoint"
 msgstr "Endpoint compatibile OpenAI"
 
 #. module: ai_text_rewrite
-#. odoo-python
-#: code:addons/ai_text_rewrite/models/ai_rewrite_service.py:0
+#. odoo-javascript
+#: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
 #, python-format
-msgid "Please configure the API base URL and the model name in Settings."
-msgstr ""
-"Configura l'URL base delle API e il nome del modello nelle Impostazioni."
+msgid "Original text"
+msgstr "Testo originale"
 
 #. module: ai_text_rewrite
 #. odoo-javascript
@@ -185,16 +170,15 @@ msgid "Replace"
 msgstr "Sostituisci"
 
 #. module: ai_text_rewrite
-#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__ai_rewrite_timeout
-msgid "Request Timeout (seconds)"
-msgstr "Timeout richiesta (secondi)"
-
-#. module: ai_text_rewrite
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.js:0
 #, python-format
-msgid "Rewrite this text so that it is clearer, more professional and technically more thorough."
-msgstr "Riscrivi questo testo in modo che sia più chiaro, professionale e tecnicamente più approfondito."
+msgid ""
+"Rewrite this text so that it is clearer, more professional and technically "
+"more thorough."
+msgstr ""
+"Riscrivi questo testo in modo che sia più chiaro, professionale e "
+"tecnicamente più approfondito."
 
 #. module: ai_text_rewrite
 #. odoo-javascript
@@ -217,6 +201,15 @@ msgstr ""
 "AI"
 
 #. module: ai_text_rewrite
+#: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
+msgid ""
+"Texts already written in the same field are sent to the AI service as style "
+"references"
+msgstr ""
+"I testi già scritti nello stesso campo vengono inviati al servizio AI come "
+"riferimenti di stile"
+
+#. module: ai_text_rewrite
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.js:0
 #, python-format
@@ -227,19 +220,8 @@ msgstr "La richiesta di riscrittura AI non è riuscita. Riprova."
 #. odoo-python
 #: code:addons/ai_text_rewrite/models/ai_rewrite_service.py:0
 #, python-format
-msgid ""
-"The configured AI service could not be reached, please check the settings."
-msgstr ""
-"Non è stato possibile raggiungere il servizio AI configurato: controlla le "
-"impostazioni."
-
-#. module: ai_text_rewrite
-#. odoo-python
-#: code:addons/ai_text_rewrite/models/ai_rewrite_service.py:0
-#, python-format
-msgid "The configured API key was rejected, please check it in Settings."
-msgstr ""
-"La chiave API configurata è stata rifiutata: controllala nelle Impostazioni."
+msgid "The AI service returned an empty answer, please try again."
+msgstr "Il servizio AI ha restituito una risposta vuota, riprova."
 
 #. module: ai_text_rewrite
 #. odoo-python
@@ -300,11 +282,6 @@ msgid "There is no text to rewrite."
 msgstr "Non c'è testo da riscrivere."
 
 #. module: ai_text_rewrite
-#: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
-msgid "console.groq.com/keys"
-msgstr "console.groq.com/keys"
-
-#. module: ai_text_rewrite
 #. odoo-javascript
 #: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
 #, python-format
@@ -321,38 +298,3 @@ msgstr ""
 #, python-format
 msgid "You do not have access to this feature."
 msgstr "Non hai accesso a questa funzione."
-
-#. module: ai_text_rewrite
-#. odoo-python
-#: code:addons/ai_text_rewrite/models/ai_rewrite_service.py:0
-#, python-format
-msgid "The AI service returned an empty answer, please try again."
-msgstr "Il servizio AI ha restituito una risposta vuota, riprova."
-
-#. module: ai_text_rewrite
-#. odoo-python
-#: code:addons/ai_text_rewrite/models/ai_rewrite_service.py:0
-#, python-format
-msgid ""
-"The AI service does not know the configured model, or the API key has no access to it. Check the model name in Settings.\n"
-"%s"
-msgstr ""
-"Il servizio AI non conosce il modello configurato, oppure la chiave API non vi ha accesso. Controlla il nome del modello nelle Impostazioni.\n"
-"%s"
-
-#. module: ai_text_rewrite
-#: model:ir.model.fields,field_description:ai_text_rewrite.field_res_config_settings__is_ai_rewrite_style_enabled
-msgid "Learn from Existing Texts"
-msgstr "Impara dai testi esistenti"
-
-#. module: ai_text_rewrite
-#: model_terms:ir.ui.view,arch_db:ai_text_rewrite.res_config_settings_view_form
-msgid "Texts already written in the same field are sent to the AI service as style references"
-msgstr "I testi già scritti nello stesso campo vengono inviati al servizio AI come riferimenti di stile"
-
-#. module: ai_text_rewrite
-#. odoo-javascript
-#: code:addons/ai_text_rewrite/static/src/dialog/ai_rewrite_dialog.xml:0
-#, python-format
-msgid "Original text"
-msgstr "Testo originale"

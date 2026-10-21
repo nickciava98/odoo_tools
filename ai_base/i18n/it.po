@@ -1,0 +1,146 @@
+# Translation of Odoo Server.
+# This file contains the translation of the following modules:
+# 	* ai_base
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Odoo Server 16.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-10-21 07:29+0000\n"
+"PO-Revision-Date: 2026-10-21 07:29+0000\n"
+"Last-Translator: \n"
+"Language-Team: \n"
+"Language: it\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: \n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#. module: ai_base
+#: model_terms:ir.ui.view,arch_db:ai_base.res_config_settings_view_form_ai_base
+msgid "<span class=\"o_form_label\">OpenAI-compatible Service</span>"
+msgstr "<span class=\"o_form_label\">Servizio compatibile OpenAI</span>"
+
+#. module: ai_base
+#: model:ir.model,name:ai_base.model_ai_provider
+#: model_terms:ir.ui.view,arch_db:ai_base.res_config_settings_view_form_ai_base
+msgid "AI Provider"
+msgstr "Provider AI"
+
+#. module: ai_base
+#: model:ir.model.fields,field_description:ai_base.field_res_config_settings__ai_provider_base_url
+msgid "API Base URL"
+msgstr "URL base API"
+
+#. module: ai_base
+#: model:ir.model.fields,field_description:ai_base.field_res_config_settings__ai_provider_api_key
+msgid "Provider API Key"
+msgstr "Chiave API del provider"
+
+#. module: ai_base
+#: model:ir.model,name:ai_base.model_res_config_settings
+msgid "Config Settings"
+msgstr "Impostazioni di configurazione"
+
+#. module: ai_base
+#: model_terms:ir.ui.view,arch_db:ai_base.res_config_settings_view_form_ai_base
+msgid ""
+"Conversation data and texts are sent to the configured provider. The "
+"default, Groq, does not train on API data; the free tiers of some other "
+"providers do."
+msgstr ""
+"I dati delle conversazioni e i testi vengono inviati al provider "
+"configurato. Quello predefinito, Groq, non usa i dati delle API per "
+"l'addestramento; i piani gratuiti di alcuni altri provider invece sì."
+
+#. module: ai_base
+#: model_terms:ir.ui.view,arch_db:ai_base.res_config_settings_view_form_ai_base
+msgid "Get a free key at"
+msgstr "Ottieni una chiave gratuita su"
+
+#. module: ai_base
+#: model:ir.model.fields,field_description:ai_base.field_res_config_settings__ai_provider_model
+msgid "Model"
+msgstr "Modello"
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid "Please configure the AI provider base URL and model in Settings."
+msgstr "Configura l'URL base e il modello del provider AI nelle Impostazioni."
+
+#. module: ai_base
+#: model:ir.model.fields,field_description:ai_base.field_res_config_settings__ai_provider_timeout
+msgid "Request Timeout (seconds)"
+msgstr "Timeout richiesta (secondi)"
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid ""
+"The AI service does not know the configured model, or the API key has no access to it. Check the model name in Settings.\n"
+"%s"
+msgstr ""
+"Il servizio AI non conosce il modello configurato, oppure la chiave API non vi ha accesso. Controlla il nome del modello nelle Impostazioni.\n"
+"%s"
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid ""
+"The AI service is receiving too many requests, please try again in a moment."
+msgstr ""
+"Il servizio AI sta ricevendo troppe richieste: riprova tra qualche istante."
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid ""
+"The configured AI service could not be reached, please check the settings."
+msgstr ""
+"Non è stato possibile raggiungere il servizio AI configurato: controlla le "
+"impostazioni."
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid "The configured API key was rejected, please check it in Settings."
+msgstr ""
+"La chiave API configurata è stata rifiutata: controllala nelle Impostazioni."
+
+#. module: ai_base
+#: model_terms:ir.ui.view,arch_db:ai_base.res_config_settings_view_form_ai_base
+msgid "console.groq.com/keys"
+msgstr "console.groq.com/keys"
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid "The AI model produced an invalid tool call, please try again."
+msgstr "Il modello AI ha generato una chiamata a uno strumento non valida, riprova."
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid ""
+"The AI service has reached its usage limit, please try again in %s minutes."
+msgstr ""
+"Il servizio AI ha raggiunto il limite di utilizzo: riprova tra %s minuti."
+
+#. module: ai_base
+#. odoo-python
+#: code:addons/ai_base/models/ai_provider.py:0
+#, python-format
+msgid ""
+"The question needs more data than the AI service accepts in one request: "
+"narrow it down, e.g. a shorter period or a single project."
+msgstr ""
+"La domanda richiede più dati di quanti il servizio AI ne accetti in una sola "
+"richiesta: restringila, ad esempio a un periodo più breve o a un solo progetto."

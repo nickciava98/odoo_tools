@@ -6,5 +6,6 @@ from . import test_list_wrap
 from . import test_migrate_model_default
 from . import test_migrate_prompt_default
 from . import test_migrate_provider_default
+from . import test_migrate_provider_settings
 from . import test_migrate_style_prompt
 from . import test_res_config_settings

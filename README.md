@@ -6,7 +6,31 @@ Branch `16.0` targets **Odoo 16 Community**.
 
 | | Addon | Version | Summary |
 | --- | --- | --- | --- |
-| <img src="ai_text_rewrite/static/description/icon.png" width="28"> | [`ai_text_rewrite`](ai_text_rewrite) | 16.0.1.4.1 | Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings |
+| <img src="ai_base/static/description/icon.png" width="28"> | [`ai_base`](ai_base) | 16.0.1.0.0 | Shared connection to an OpenAI-compatible AI provider, used by the other AI addons |
+| <img src="ai_text_rewrite/static/description/icon.png" width="28"> | [`ai_text_rewrite`](ai_text_rewrite) | 16.0.2.0.0 | Rewrite the content of char, text and html fields with an AI model, using a shared prompt set in Settings |
+
+---
+
+## ai_base
+
+The connection to the AI provider, configured once and shared by `ai_text_rewrite` and
+the `ai_chatbot` assistant (in the DueEsseTi Common repository): any endpoint speaking the OpenAI `/chat/completions` protocol
+(Groq, OpenAI, OpenRouter, Ollama, LocalAI, Gemini's compatibility layer).
+
+*Settings → General Settings → AI Provider*
+
+| Setting | Parameter (`ir.config_parameter`) | Shipped default |
+| --- | --- | --- |
+| API base URL | `ai_base.base_url` | `https://api.groq.com/openai/v1` |
+| API key | `ai_base.api_key` | *(empty — set your own)* |
+| Model | `ai_base.model` | `openai/gpt-oss-120b` |
+| Timeout (s) | `ai_base.timeout` | `60` |
+
+Groq does not train on API data; the free tiers of some other providers do, so
+check the provider's terms before pointing it at a production database. On the
+Groq free tier every model is capped at **8,000 tokens per minute** (read from the
+`x-ratelimit-limit-tokens` header in October 2026): enough for one person, not for
+a team, which needs the paid Dev tier or another provider.
 
 ---
 
@@ -52,15 +76,12 @@ The field is written only when you confirm, so a bad result costs nothing.
 | Setting | Parameter (`ir.config_parameter`) | Shipped default |
 | --- | --- | --- |
 | Provider | `ai_text_rewrite.provider` | `openai` |
-| Endpoint | `ai_text_rewrite.base_url` | `https://api.groq.com/openai/v1` |
-| API key | `ai_text_rewrite.api_key` | *(empty — set your own)* |
-| Model | `ai_text_rewrite.model` | `openai/gpt-oss-120b` |
 | System prompt | `ai_text_rewrite.system_prompt` | see below |
-| Timeout (s) | `ai_text_rewrite.timeout` | `60` |
 
-Out of the box the module points at [Groq](https://console.groq.com/keys), whose
-free tier is enough to try it. Paste your key in Settings — never in the source
-tree.
+Endpoint, API key, model and timeout come from [`ai_base`](#ai_base). Out of the
+box they point at [Groq](https://console.groq.com/keys), whose free tier is enough
+to try it. Paste your key in Settings — never in the source tree. Upgrading from
+16.0.1.x moves the values already set under `ai_text_rewrite.*` to `ai_base.*`.
 
 Not every key is served every model: Groq answers `404 model_not_found` for a
 model your key cannot reach, and the list a key actually has is at
@@ -100,9 +121,7 @@ module shipped.
 
 ### Providers
 
-* **OpenAI-compatible endpoint** (default) — anything speaking `/chat/completions`:
-  Groq, OpenAI, OpenRouter, Ollama, LocalAI, Gemini's compatibility layer. Set
-  the base URL, the key and the model name.
+* **OpenAI-compatible endpoint** (default) — the one configured in `ai_base`.
 * **Free service (no API key)** — [Pollinations](https://text.pollinations.ai),
   kept as a zero-configuration trial. It is anonymous and rate-limited — measured
   behaviour is `402` a little past 600 characters of prompt — so the module caps
@@ -118,14 +137,16 @@ module shipped.
 * HTML answers are sanitised before they touch the field, and markdown fences the
   model may wrap around its answer are stripped.
 
-### Tests
+---
+
+## Tests
 
 ```bash
-odoo-bin -d <database> -u ai_text_rewrite --test-enable --test-tags /ai_text_rewrite --stop-after-init
+odoo-bin -d <database> -u ai_base,ai_text_rewrite --test-enable --test-tags /ai_base,/ai_text_rewrite --stop-after-init
 ```
 
-63 tests, including three browser tours covering the text widget, the html widget
-and the provider switch. No test reaches the network.
+`ai_base` 39, `ai_text_rewrite` 142 tests, including three browser
+tours on the rewrite widgets and settings. No test reaches the network.
 
 ---
 

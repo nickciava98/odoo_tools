@@ -9,27 +9,11 @@ class ResConfigSettings(models.TransientModel):
         config_parameter="ai_text_rewrite.provider",
         string="AI Provider"
     )
-    ai_rewrite_base_url = fields.Char(
-        config_parameter="ai_text_rewrite.base_url",
-        string="API Base URL"
-    )
-    ai_rewrite_api_key = fields.Char(
-        config_parameter="ai_text_rewrite.api_key",
-        string="API Key"
-    )
-    ai_rewrite_model = fields.Char(
-        config_parameter="ai_text_rewrite.model",
-        string="Model"
-    )
     ai_rewrite_system_prompt = fields.Text(
         string="System Prompt"
     )
     is_ai_rewrite_style_enabled = fields.Boolean(
         string="Learn from Existing Texts"
-    )
-    ai_rewrite_timeout = fields.Integer(
-        config_parameter="ai_text_rewrite.timeout",
-        string="Request Timeout (seconds)"
     )
 
     def get_values(self):

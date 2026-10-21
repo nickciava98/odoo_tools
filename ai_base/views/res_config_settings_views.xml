@@ -1,0 +1,50 @@
+<odoo>
+    <record id="res_config_settings_view_form_ai_base" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.ai.base</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base_setup.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="AI Provider" string="AI Provider" data-key="ai_base" groups="base.group_system">
+                    <h2>AI Provider</h2>
+                    <div class="row mt16 o_settings_container" id="ai_provider_setting_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <span class="o_form_label">OpenAI-compatible Service</span>
+                                <div class="text-muted">
+                                    Conversation data and texts are sent to the configured provider. The default, Groq, does not train on API data; the free tiers of some other providers do.
+                                </div>
+                                <div class="content-group">
+                                    <div class="row mt8">
+                                        <label for="ai_provider_base_url" class="col-lg-4 o_light_label"/>
+                                        <field name="ai_provider_base_url" class="col-lg-8"/>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="ai_provider_api_key" class="col-lg-4 o_light_label"/>
+                                        <field name="ai_provider_api_key" password="True" class="col-lg-8"/>
+                                    </div>
+                                    <div class="row">
+                                        <div class="offset-lg-4 col-lg-8">
+                                            <span class="text-muted">
+                                                Get a free key at
+                                                <a href="https://console.groq.com/keys" target="_blank" class="o_doc_link">console.groq.com/keys</a>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="ai_provider_model" class="col-lg-4 o_light_label"/>
+                                        <field name="ai_provider_model" class="col-lg-8"/>
+                                    </div>
+                                    <div class="row mt8">
+                                        <label for="ai_provider_timeout" class="col-lg-4 o_light_label"/>
+                                        <field name="ai_provider_timeout" class="col-lg-3"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

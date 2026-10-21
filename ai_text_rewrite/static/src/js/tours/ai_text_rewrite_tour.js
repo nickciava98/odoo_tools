@@ -75,10 +75,10 @@ tour.register("ai_text_rewrite_settings_provider_switch", {
         run: 'text "openai"',
     },
     {
-        // Same proof in the other direction: the base_url/api_key/model group is visible again.
+        // Same proof in the other direction: the pollinations-only warning is gone again.
         // Last step, no run: Settings has no readonly mode to return to (it is always "editable"),
         // so the wrapper must set allow_end_on_form = True instead of expecting a save/discard here.
-        trigger: '.app_settings_block[data-key="ai_text_rewrite"] .o_field_widget[name="ai_rewrite_base_url"] input',
+        trigger: '.app_settings_block[data-key="ai_text_rewrite"]:not(:has(p[data-test="pollinations-warning"]:visible))',
     },
 ]);
 

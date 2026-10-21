@@ -6,16 +6,6 @@
             <field name="value">openai</field>
         </record>
 
-        <record id="ai_rewrite_base_url_parameter" model="ir.config_parameter">
-            <field name="key">ai_text_rewrite.base_url</field>
-            <field name="value">https://api.groq.com/openai/v1</field>
-        </record>
-
-        <record id="ai_rewrite_model_parameter" model="ir.config_parameter">
-            <field name="key">ai_text_rewrite.model</field>
-            <field name="value">openai/gpt-oss-120b</field>
-        </record>
-
         <record id="ai_rewrite_system_prompt_parameter" model="ir.config_parameter">
             <field name="key">ai_text_rewrite.system_prompt</field>
             <field name="value">You are a writing assistant embedded in a business application. Rewrite the text you are given so that it says the same thing, better: clear, correct, concrete, professional and technically thorough.
@@ -35,11 +25,6 @@ Rules:
 - Preserve the formatting you receive: keep existing HTML markup, line breaks and list items as they are.
 
 Reply with the rewritten text only, without comments, explanations or quotes.</field>
-        </record>
-
-        <record id="ai_rewrite_timeout_parameter" model="ir.config_parameter">
-            <field name="key">ai_text_rewrite.timeout</field>
-            <field name="value">60</field>
         </record>
     </data>
 </odoo>
